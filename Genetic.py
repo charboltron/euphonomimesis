@@ -1,14 +1,14 @@
 import numpy as np
 import math
 
-# probablistically mutate a vector in place
+# probablistically mutate a vector
 # assume values in vector normalized to [0, 1]
 
 def mutate(v, prob):
   if np.random.rand() < prob:
     r = np.random.randint(len(v))
     v[r] = np.random.rand()
-    return v
+  return v
 
 # take an input matrix and probability,
 # mutate each vector in the matrix
