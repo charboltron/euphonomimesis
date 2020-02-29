@@ -13,7 +13,7 @@ def mutate(v, prob):
 # take an input matrix and probability,
 # mutate each vector in the matrix
 
-def mutateAll(m, prob):
+def mutate_all(m, prob):
   f = lambda v: mutate(v, prob)
   return np.apply_along_axis(f, 1, m)
 
@@ -29,7 +29,7 @@ def crossover(v1, v2):
 # take a matrix of values and a goal vector
 # return normalized euclidean distances between vectors
 
-def fitAll(m, g):
+def fit_all(m, g):
   f = lambda v: np.linalg.norm(v-g)
   v = np.apply_along_axis(f, 1, m)
   return v / math.sqrt(len(g))
