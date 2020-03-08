@@ -5,9 +5,12 @@ import math
 # assume values in vector normalized to [0, 1]
 
 def mutate(v, prob):
-  if np.random.rand() < prob:
-    r = np.random.randint(len(v))
-    v[r] = np.random.rand()
+  big = max(v)
+  for item in v:
+    if np.random.rand() < prob:
+      r = np.random.randint(len(v))
+      item += (np.random.rand()-0.5)*(item/2)
+  np.clip(v, 0, big)
   return v
 
 # take an input matrix and probability,
@@ -22,9 +25,9 @@ def mutate_all(m, prob):
 
 def crossover(v1, v2):
   r = np.random.randint(1, len(v1)) 
-  print("cross", r)
+  # print("cross", r)
   a = np.append(v1[:r], v2[r:])
-  b = np.append(v1[r:], v2[:r])
+  b = np.append(v2[:r], v1[r:])
   return (a, b) 
 
 def crossover2(v1, v2):
@@ -46,6 +49,23 @@ def crossover2(v1, v2):
 # return normalized euclidean distances between vectors
 
 def fit_all(m, g):
+  print(len(m))
+  print(len(g))
+
+  epsilon = .01
   f = lambda v: np.linalg.norm(v-g)
   v = np.apply_along_axis(f, 1, m)
-  return v / math.sqrt(len(g))
+  
+  # for vec in m:  this is what linalg.norm(v-g) does
+  #   error = 0.0
+  #   for j in range(len(vec)): 
+  #     error += pow(vec[j]-g[j], 2)
+  #   errors.append(math.sqrt(error))
+
+  for e in v:
+    if e <= epsilon:
+      print("Goal.")
+  # print(f'norm v = {v/sum(v)}, sum of normed = {sum(v/sum(v))}')
+  # print(f'v = {v}')
+
+  return v/sum(v)
