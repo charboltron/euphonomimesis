@@ -30,20 +30,38 @@ def crossover(v1, v2):
   b = np.append(v2[:r], v1[r:])
   return (a, b) 
 
+# intersperse genes
 def crossover2(v1, v2):
-  ays = []
-  bs = []
+  aList = []
+  bList = []
   a1 = v1[::2]
   a2 = v1[1::2]
   b1 = v2[::2]
   b2 = v2[1::2]
   for one, two in zip(a1, b2):
-      ays.append(one)
-      ays.append(two)
+      aList.append(one)
+      aList.append(two)
   for one, two in zip(b1, a2):
-      bs.append(one)
-      bs.append(two)
-  return (np.array(ays), np.array(bs)) 
+      bList.append(one)
+      bList.append(two)
+  return (np.array(aList), np.array(bList)) 
+
+def crossover3(v1, v2):
+  aList = []
+  bList = []
+  switch = False
+  r = np.random.randint(1, len(v1)) 
+  a = np.array_split(v1, r)
+  b = np.array_split(v2, r)
+  for x, y in zip(a, b):
+    if switch:
+      aList.append(x)
+      bList.append(y)
+    else:
+      aList.append(y)
+      bList.append(x)
+    switch = not switch
+  return (np.array(aList), np.array(bList)) 
 
 # take a matrix of values and a goal vector
 # return normalized euclidean distances between vectors
