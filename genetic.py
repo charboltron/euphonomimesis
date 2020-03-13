@@ -8,7 +8,7 @@ def mutate(v, prob):
   big = max(v)
   for item in v:
     if np.random.rand() < prob:
-      r = np.random.randint(len(v))
+      # r = np.random.randint(len(v))
       item += (np.random.rand()-0.5)*(item/2)
   np.clip(v, 0, big)
   return v
@@ -45,14 +45,32 @@ def crossover2(v1, v2):
       bs.append(two)
   return (np.array(ays), np.array(bs)) 
 
+def crossover3(v1, v2):
+  aList = []
+  bList = []
+  switch = False
+  r = np.random.randint(1, len(v1)) 
+  a = np.array_split(v1, r)
+  b = np.array_split(v2, r)
+  for x, y in zip(a, b):
+    if switch:
+      aList.append(x)
+      bList.append(y)
+    else:
+      aList.append(y)
+      bList.append(x)
+    switch = not switch
+  return (np.array(aList), np.array(bList)) 
+
 # take a matrix of values and a goal vector
 # return normalized euclidean distances between vectors
 
 def fit_all(m, g):
-  print(len(m))
-  print(len(g))
+# for l in range(100):
+#   print(len(m[l]))
+# print(len(g))
 
-  epsilon = .01
+  epsilon = .00001
   f = lambda v: np.linalg.norm(v-g)
   v = np.apply_along_axis(f, 1, m)
   
@@ -61,11 +79,12 @@ def fit_all(m, g):
   #   for j in range(len(vec)): 
   #     error += pow(vec[j]-g[j], 2)
   #   errors.append(math.sqrt(error))
-
-  for e in v:
+  goal = False
+  for e in (v/sum(v)):
     if e <= epsilon:
       print("Goal.")
+      goal = True
   # print(f'norm v = {v/sum(v)}, sum of normed = {sum(v/sum(v))}')
   # print(f'v = {v}')
-
-  return v/sum(v)
+  # print(f'mininum error = {min(v/sum(v))} ')
+  return v/sum(v), goal
