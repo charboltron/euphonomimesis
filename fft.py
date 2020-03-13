@@ -9,10 +9,10 @@ import genetic as gen
 import display_plot as disp
 
 def get_clips(max_clips):
-    goal_clip = 'Clarinets.wav'
+    goal_clip = '0a0a8d4c.6.wav'
     fft_goal = []
     cwd = os.getcwd()
-    clip_dir = os.listdir(cwd+'/clips/')
+    clip_dir = os.listdir(cwd+'/1secs/')
     clips = [f for f in clip_dir if '.wav' in f if f != goal_clip]
     if(goal_clip not in clips):
         clips.insert(0, goal_clip)
@@ -20,7 +20,7 @@ def get_clips(max_clips):
     params = None
     for clip in range(min(max_clips, len(clips))):
         print(clips[clip])
-        wv = cwd+'/clips/'+clips[clip]
+        wv = cwd+'/1secs/'+clips[clip]
         current_clip = wav.open(wv, 'rb')
         params = current_clip.getparams()
         # ps(wv) # play sound
@@ -44,10 +44,14 @@ def get_clips(max_clips):
         current_clip.close()    
     return np.array(fft_data), params, fft_goal
 
+counter = 0
+
 def play_fft(fft_vector, params):
+    global counter
+    counter += 1
     cwd = os.getcwd()
-    iyf = scipy.fftpack.irfft(fft_vector, 352800)
-    file_path = 'mod_clips/new_sound_file.wav'
+    iyf = scipy.fftpack.irfft(fft_vector, 44100)
+    file_path = 'mod_clips/exp' + str(counter) + '.wav'
     write_file(file_path, iyf, params) 
     # ps(cwd+'/'+file_path) # play modified sound
     return
@@ -56,12 +60,13 @@ def write_file(name, sample_data, params):
     wav_file = wav.open(name, 'w')
     wav_file.setparams(params)
     for samp in sample_data:
-        if not (int(samp)<=32767 or int(samp)>=-32767):
+        if not ((-0x7fff - 1) <= int(samp) or int(samp) <= 0x7fff):
             print(f'whats this? {int(samp)}')
-        wav_file.writeframes(struct.pack('h', int(samp) if int(samp)<=32767 or int(samp)>=-32767 else 0))
+        else:
+          wav_file.writeframes(struct.pack('h', int(samp)))
 
 def breed_loop(N):
-    data, params, gdata = get_clips(70)
+    data, params, gdata = get_clips(500)
     for n in range(N):
         ffts = []
         errors = gen.fit_all(data, gdata)
@@ -85,7 +90,7 @@ def breed_loop(N):
     return ffts
 
 def main():
-    ffts = breed_loop(100)
+    ffts = breed_loop(1000)
     # disp.display_ffts(ffts, len(ffts[0]))
 
 main()
