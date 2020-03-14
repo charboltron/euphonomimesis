@@ -1,5 +1,7 @@
 import numpy as np
 import scipy.fftpack
+import scipy.io as sio
+import scipy.io.wavfile
 from playsound import playsound as ps
 import struct
 import display_plot
@@ -8,65 +10,37 @@ import os
 import genetic as gen
 import display_plot as disp
 
-def get_clips(max_clips):
-    goal_clip = '0a0a8d4c.6.wav'
-    fft_goal = []
-    cwd = os.getcwd()
-    clip_dir = os.listdir(cwd+'/1secs/')
-    clips = [f for f in clip_dir if '.wav' in f if f != goal_clip]
-    if(goal_clip not in clips):
-        clips.insert(0, goal_clip)
-    fft_data = []
-    params = None
-    for clip in range(min(max_clips, len(clips))):
-        print(clips[clip])
-        wv = cwd+'/1secs/'+clips[clip]
-        current_clip = wav.open(wv, 'rb')
-        params = current_clip.getparams()
-        # ps(wv) # play sound
-        channels = current_clip.getnchannels()
-        width = current_clip.getsampwidth()
-        frames = current_clip.getnframes()
-        frame_width = width * channels
-        wave_bytes = current_clip.readframes(frames)
-        samples = []
-        for f in range(0, len(wave_bytes), frame_width):
-            frame = wave_bytes[f : f + frame_width]
-            for c in range(0, len(frame), width):
-                sample_bytes = frame[c : c + width]
-                sample = int.from_bytes(sample_bytes,byteorder='little',signed=(width>1))
-                samples.append(float(sample))      
-        yf = np.array(scipy.fftpack.rfft(samples))
-        if clips[clip] == goal_clip:
-            fft_goal = yf
-        else: 
-            fft_data.append(yf) 
-        current_clip.close()    
-    return np.array(fft_data), params, fft_goal
+def get_clips(dir_name, max_clips):
+  clips = [f for f in os.listdir(dir_name) if '.wav' in f]
+  fft_data = []
+  for clip in range(min(max_clips, len(clips))):
+    print(clips[clip])
+    wv = dir_name + clips[clip]
+    _, data = sio.wavfile.read(wv)
+    transformed_data = np.array(scipy.fftpack.rfft(data))
+    print(len(transformed_data))
+    fft_data.append(transformed_data)
+  return np.array(fft_data)
+
 
 counter = 0
 
-def play_fft(fft_vector, params):
+def play_fft(fft_vector):
     global counter
     counter += 1
     cwd = os.getcwd()
     iyf = scipy.fftpack.irfft(fft_vector, 44100)
     file_path = 'mod_clips/exp' + str(counter) + '.wav'
-    write_file(file_path, iyf, params) 
+    # write_file(file_path, iyf, params) 
+    write_file_new(file_path, iyf) 
     # ps(cwd+'/'+file_path) # play modified sound
     return
 
-def write_file(name, sample_data, params):
-    wav_file = wav.open(name, 'w')
-    wav_file.setparams(params)
-    for samp in sample_data:
-        if not ((-0x7fff - 1) <= int(samp) or int(samp) <= 0x7fff):
-            print(f'whats this? {int(samp)}')
-        else:
-          wav_file.writeframes(struct.pack('h', int(samp)))
+def write_file(name, sample_data):
+  sio.wavfile.write(filename=name, rate=44100, data=sample_data)
+  print("success writing")
 
-def breed_loop(N):
-    data, params, gdata = get_clips(500)
+def breed_loop(N, data, gdata):
     for n in range(N):
         ffts = []
         errors = gen.fit_all(data, gdata)
@@ -84,14 +58,18 @@ def breed_loop(N):
             # cross1, cross2 = gen.mutate(cross1, 0.8), gen.mutate(cross2, 0.8)
             cross1, cross2 = np.append(cross1, leftover1), np.append(cross2, leftover2)
             data[i], data[2*i] = cross1, cross2
-            if n % 5 == 0 and i % 10 == 0:
-                play_fft(cross1, params)
-                play_fft(cross2, params)
+            #if n % 5 == 0 and i % 10 == 0:
+                #play_fft(cross1)
+                #play_fft(cross2)
     return ffts
 
 def main():
-    ffts = breed_loop(1000)
-    # disp.display_ffts(ffts, len(ffts[0]))
+  dir_name = os.getcwd() + '/1secs/'
+  g_dir_name = os.getcwd() + '/1sec_goals/'
+  data = get_clips(dir_name, 100)
+  gdata = get_clips(g_dir_name, 1)
+  ffts = breed_loop(1000, data, gdata)
+  # disp.display_ffts(ffts, len(ffts[0]))
 
 main()
 
