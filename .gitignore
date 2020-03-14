@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+#wav dirs
+mod_clips/
+clips/
+1sec_goals/
+1secs/
+
 # Distribution / packaging
 .Python
 build/
