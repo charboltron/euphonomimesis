@@ -67,8 +67,8 @@ def crossover3(v1, v2):
 # return normalized euclidean distances between vectors
 
 def fit_all(m, g):
-  print(len(m))
-  print(len(g))
+  # print(len(m))
+  # print(len(g))
 
   epsilon = .01
   f = lambda v: np.linalg.norm(v-g)
@@ -83,6 +83,7 @@ def fit_all(m, g):
   for e in v:
     if e <= epsilon:
       print("Goal.")
+
   # print(f'norm v = {v/sum(v)}, sum of normed = {sum(v/sum(v))}')
   # print(f'v = {v}')
 

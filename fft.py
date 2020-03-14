@@ -14,11 +14,9 @@ def get_clips(dir_name, max_clips):
   clips = [f for f in os.listdir(dir_name) if '.wav' in f]
   fft_data = []
   for clip in range(min(max_clips, len(clips))):
-    print(clips[clip])
     wv = dir_name + clips[clip]
     _, data = sio.wavfile.read(wv)
     transformed_data = np.array(scipy.fftpack.rfft(data))
-    print(len(transformed_data))
     fft_data.append(transformed_data)
   return np.array(fft_data)
 
@@ -32,13 +30,12 @@ def play_fft(fft_vector):
     iyf = scipy.fftpack.irfft(fft_vector, 44100)
     file_path = 'mod_clips/exp' + str(counter) + '.wav'
     # write_file(file_path, iyf, params) 
-    write_file_new(file_path, iyf) 
+    write_file(file_path, iyf) 
     # ps(cwd+'/'+file_path) # play modified sound
     return
 
 def write_file(name, sample_data):
   sio.wavfile.write(filename=name, rate=44100, data=sample_data)
-  print("success writing")
 
 def breed_loop(N, data, gdata):
     for n in range(N):
