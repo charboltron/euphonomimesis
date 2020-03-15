@@ -13,10 +13,13 @@ import display_plot as disp
 def get_clips(dir_name, max_clips):
   clips = [f for f in os.listdir(dir_name) if '.wav' in f]
   fft_data = []
+  if max_clips == 1: 
+    clips = [clips[np.random.randint(0, len(clips))]]
+    print(f'Goal clip = {clips[0]}')
   for clip in range(min(max_clips, len(clips))):
     wv = dir_name + clips[clip]
     _, data = sio.wavfile.read(wv)
-    print(data.dtype, "dat")
+    # print(data.dtype, "dat")
     transformed_data = np.array(scipy.fftpack.rfft(data))
     fft_data.append(transformed_data)
   return np.array(fft_data)
@@ -32,7 +35,7 @@ def play_fft(fft_vector):
     file_path = 'mod_clips/exp' + str(counter) + '.wav'
     # write_file(file_path, iyf, params) 
     write_file(file_path, iyf) 
-    # ps(cwd+'/'+file_path) # play modified sound
+    ps(cwd+'/'+file_path) # play modified sound
     return
 
 def write_file(name, sample_data):
@@ -44,12 +47,22 @@ def breed_loop(N, data, gdata, save_interval):
     print("Generation:", n)
     ffts = []
     new_data = np.zeros(np.shape(data))
-    errors = gen.fit_all(data, gdata)
+    errors, goal = gen.fit_all(data, gdata)
+    print(f'min error {np.amin(errors)}')
+    if goal: 
+        print("Goal!")
+        exit()
     for i in range(len(data)//2): #gen range*2 children
       r = np.arange(len(errors))
       i1, i2 = np.random.choice(r, 2, p=errors)
-      cross1, cross2 = gen.crossover(data[i1], data[i2])
-      # cross1, cross2 = gen.mutate(cross1, 0.8), gen.mutate(cross2, 0.8)
+      c = np.random.randint(0, 3)
+      if c == 0:
+        cross1, cross2 = gen.crossover(data[i1], data[i2])
+      elif c == 1:
+        cross1, cross2 = gen.crossover2(data[i1], data[i2])
+      else:
+        cross1, cross2 = gen.crossover(data[i1], data[i2])
+    #   cross1, cross2 = gen.mutate(cross1, 0.8), gen.mutate(cross2, 0.8)
       new_data[i], new_data[i+(len(data)//2)] = cross1, cross2
       if n % save_interval == 0 and i == 0:
         play_fft(cross1)
@@ -60,9 +73,9 @@ def breed_loop(N, data, gdata, save_interval):
 def main():
   dir_name = os.getcwd() + '/1secs/'
   g_dir_name = os.getcwd() + '/1sec_goals/'
-  data = get_clips(dir_name, 1000)
+  data = get_clips(dir_name, 8657)
   gdata = get_clips(g_dir_name, 1)
-  ffts = breed_loop(1000, data, gdata, 10)
+  ffts = breed_loop(1000, data, gdata, save_interval=10)
   # disp.display_ffts(ffts, len(ffts[0]))
 
 main()
