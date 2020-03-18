@@ -13,14 +13,16 @@ import display_plot as disp
 def get_clips(dir_name, max_clips):
   clips = [f for f in os.listdir(dir_name) if '.wav' in f]
   fft_data = []
+  if max_clips == 1: 
+    clips = [clips[np.random.randint(0, len(clips))]]
+    print(f'Goal clip = {clips[0]}')
   for clip in range(min(max_clips, len(clips))):
     wv = dir_name + clips[clip]
     _, data = sio.wavfile.read(wv)
-    print(data.dtype, "dat")
+    # print(data.dtype, "dat")
     transformed_data = np.array(scipy.fftpack.rfft(data))
     fft_data.append(transformed_data)
   return np.array(fft_data)
-
 
 counter = 0
 
@@ -36,7 +38,7 @@ def play_fft(fft_vector):
     return
 
 def write_file(name, sample_data):
-  print(sample_data.dtype)
+  # print(sample_data.dtype)
   sio.wavfile.write(filename=name, rate=44100, data=sample_data)
 
 def breed_loop(N, data, gdata, save_interval):
@@ -44,7 +46,10 @@ def breed_loop(N, data, gdata, save_interval):
     print("Generation:", n)
     ffts = []
     new_data = np.zeros(np.shape(data))
-    errors = gen.fit_all(data, gdata)
+    errors, goal = gen.fit_all(data, gdata)
+    if goal:
+      print("Goal!")
+      #TODO what do we do when we reach the goal? 
     for i in range(len(data)//2): #gen range*2 children
       r = np.arange(len(errors))
       i1, i2 = np.random.choice(r, 2, p=errors)
@@ -60,9 +65,9 @@ def breed_loop(N, data, gdata, save_interval):
 def main():
   dir_name = os.getcwd() + '/1secs/'
   g_dir_name = os.getcwd() + '/1sec_goals/'
-  data = get_clips(dir_name, 1000)
+  data = get_clips(dir_name, 8657)
   gdata = get_clips(g_dir_name, 1)
-  ffts = breed_loop(1000, data, gdata, 10)
+  ffts = breed_loop(1000, data, gdata, save_interval=10)
   # disp.display_ffts(ffts, len(ffts[0]))
 
 main()

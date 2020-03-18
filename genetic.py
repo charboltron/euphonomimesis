@@ -70,7 +70,7 @@ def fit_all(m, g):
   # print(len(m))
   # print(len(g))
 
-  epsilon = .01
+  epsilon = .00000001
   f = lambda v: np.linalg.norm(v-g)
   v = np.apply_along_axis(f, 1, m)
   
@@ -80,11 +80,12 @@ def fit_all(m, g):
   #     error += pow(vec[j]-g[j], 2)
   #   errors.append(math.sqrt(error))
 
-  for e in v:
+  goal = False
+  for e in (v/sum(v)):
     if e <= epsilon:
-      print("Goal.")
+      goal = True
 
   # print(f'norm v = {v/sum(v)}, sum of normed = {sum(v/sum(v))}')
   # print(f'v = {v}')
-
-  return v/sum(v)
+  # print(f'mininum error = {min(v/sum(v))} ')
+  return v/sum(v), goal
