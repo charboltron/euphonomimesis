@@ -16,6 +16,7 @@ def get_clips(dir_name, max_clips):
   for clip in range(min(max_clips, len(clips))):
     wv = dir_name + clips[clip]
     _, data = sio.wavfile.read(wv)
+    print(data.dtype, "dat")
     transformed_data = np.array(scipy.fftpack.rfft(data))
     fft_data.append(transformed_data)
   return np.array(fft_data)
@@ -35,37 +36,33 @@ def play_fft(fft_vector):
     return
 
 def write_file(name, sample_data):
+  print(sample_data.dtype)
   sio.wavfile.write(filename=name, rate=44100, data=sample_data)
 
-def breed_loop(N, data, gdata):
-    for n in range(N):
-        ffts = []
-        errors = gen.fit_all(data, gdata)
-
-        for i in range(len(data)//2): #gen range*2 children
-            r = np.arange(len(errors))
-            i1, i2 = np.random.choice(r, 2, p=errors)
-            cross1, cross2 = data[i1], data[i2]
-            leftover1 = cross1[22000:]
-            leftover2 = cross2[22000:]        
-            cross1    = cross1[:22000]
-            cross2    = cross2[:22000]
-            
-            cross1, cross2 = gen.crossover(cross1, cross2)
-            # cross1, cross2 = gen.mutate(cross1, 0.8), gen.mutate(cross2, 0.8)
-            cross1, cross2 = np.append(cross1, leftover1), np.append(cross2, leftover2)
-            data[i], data[2*i] = cross1, cross2
-            #if n % 5 == 0 and i % 10 == 0:
-                #play_fft(cross1)
-                #play_fft(cross2)
-    return ffts
+def breed_loop(N, data, gdata, save_interval):
+  for n in range(N):
+    print("Generation:", n)
+    ffts = []
+    new_data = np.zeros(np.shape(data))
+    errors = gen.fit_all(data, gdata)
+    for i in range(len(data)//2): #gen range*2 children
+      r = np.arange(len(errors))
+      i1, i2 = np.random.choice(r, 2, p=errors)
+      cross1, cross2 = gen.crossover(data[i1], data[i2])
+      # cross1, cross2 = gen.mutate(cross1, 0.8), gen.mutate(cross2, 0.8)
+      new_data[i], new_data[i+(len(data)//2)] = cross1, cross2
+      if n % save_interval == 0 and i == 0:
+        play_fft(cross1)
+        # play_fft(cross2)
+    data = new_data
+  return ffts
 
 def main():
   dir_name = os.getcwd() + '/1secs/'
   g_dir_name = os.getcwd() + '/1sec_goals/'
-  data = get_clips(dir_name, 100)
+  data = get_clips(dir_name, 1000)
   gdata = get_clips(g_dir_name, 1)
-  ffts = breed_loop(1000, data, gdata)
+  ffts = breed_loop(1000, data, gdata, 10)
   # disp.display_ffts(ffts, len(ffts[0]))
 
 main()
