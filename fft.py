@@ -101,6 +101,6 @@ def main():
   gdata = get_clips(g_dir_name, 1)
   ffts, min_errs = breed_loop(N, data, gdata, save_interval=20)
   # disp.display_ffts(ffts, len(ffts[0]))
-  disp.display_fitness(min_errs, N/20-1) 
+  disp.display_fitness(min_errs, len(min_errs)) 
 
 main()
