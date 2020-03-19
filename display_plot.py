@@ -10,3 +10,7 @@ def display_ffts(yfs, num_samples):
         plt.plot(xf, 2.0/num_samples * np.abs(yf[:num_samples//2]))
         # print(2.0/num_samples * np.abs(yf[:num_samples//2]))
     plt.show()
+
+def display_fitness(min_fitnesses, num_fitnesses):
+    plt.plot(np.arange(0, num_fitnesses), min_fitnesses)
+    plt.show()

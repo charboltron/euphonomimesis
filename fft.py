@@ -15,7 +15,7 @@ from shutil import copyfile
 import genetic as gen
 import display_plot as disp
 
-N = 10000
+N = 3000
 
 def get_clips(dir_name, max_clips):
   clips = [f for f in os.listdir(dir_name) if '.wav' in f]
@@ -27,7 +27,6 @@ def get_clips(dir_name, max_clips):
   for clip in range(min(max_clips, len(clips))):
     wv = dir_name + clips[clip]
     _, data = sio.wavfile.read(wv)
-    # print(data.dtype, "dat")
     transformed_data = np.array(scipy.fftpack.rfft(data))
     fft_data.append(transformed_data)
   return np.array(fft_data)
@@ -41,19 +40,13 @@ def play_fft(fft_vector):
     cwd = os.getcwd()
     iyf = scipy.fftpack.irfft(fft_vector, 44100)
     file_path = cwd+'/mod_clips/exp' + str(counter) + '.wav'
-    # write_file(file_path, iyf, params) 
     write_file(file_path, iyf) 
-    # ps(cwd+'/'+file_path) # play modified sound
     return
 
 def write_file(name, sample_data):
-  # print(sample_data.dtype)
   sio.wavfile.write(filename=name, rate=44100, data=sample_data)
   convert_sixteen.convert_single_file(name)
   os.remove(name)
-  # sample_data = np.asarray(sample_data, dtype=np.int16)
-  # rate = 44100      # samples per second                  
-  # wavio.write(name, sample_data, rate)
 
 def get_temp(n): 
 
@@ -65,39 +58,35 @@ def get_temp(n):
   return math.exp(rand/T)-1
 
 def breed_loop(N, data, gdata, save_interval):
-  
+  ffts = []
+  min_errs = []
   for n in range(N):
     print("Generation:", n)
-    ffts = []
-    errors, goal = gen.fit_all(data, gdata) 
+
+    errors, goal = gen.fit_all(data, gdata)   
     new_data = np.zeros(np.shape(data))
-    for i in range(len(data)//2): #gen range*2 children
+    for i in range(len(data)//2): 
       if goal:
         print("Goal!")
-      # i1 = random.randint(0, len(data)-1)
-      # i2 = random.randint(0, len(data)-1)
+
       r = np.arange(len(errors))
       i1, i2 = np.random.choice(r, 2, p=errors)
       cross1, cross2 = gen.crossover(data[i1], data[i2])
-      # if n % save_interval == 0 and i == 0:
-      #   play_fft(cross1)
-      #   play_fft(cross2)
       
-      cross1, cross2 = gen.mutate(cross1, get_temp(n+1)), gen.mutate(cross2, get_temp(n+1))
+      # cross1, cross2 = gen.mutate(cross1, get_temp(n+1)), gen.mutate(cross2, get_temp(n+1))
+      cross1, cross2 = gen.mutate(cross1, .5), gen.mutate(cross2, .5)
       new_data[i], new_data[i+(len(data)//2)] = cross1, cross2
-      
-      # if i % 100 == 0: 
-      #   print(i)
+
       if n % save_interval == 0 and i == 0:
-        # print('indxs:', i1, i2)
         play_fft(cross1)
-        # play_fft(cross2)   
     
     data = new_data
     if n % 25 == 0:
         print(f'min error {np.amin(errors)}')
+        min_errs.append(np.amin(errors))
+        ffts.append(data)
   
-  return ffts
+  return ffts, min_errs
 
 def main(): 
   print('deleting files in mod_clips')
@@ -110,7 +99,8 @@ def main():
   data = get_clips(dir_name, 8657)
   np.random.shuffle(data)
   gdata = get_clips(g_dir_name, 1)
-  ffts = breed_loop(N, data, gdata, save_interval=20)
+  ffts, min_errs = breed_loop(N, data, gdata, save_interval=20)
   # disp.display_ffts(ffts, len(ffts[0]))
+  disp.display_fitness(min_errs, N/20-1) 
 
 main()
