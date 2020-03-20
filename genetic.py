@@ -7,7 +7,7 @@ import math
 def mutate(v, prob):
   if np.random.rand() > prob:
     return v
-  width = 1000
+  width = 100
   delta = .1
   rand = np.random.randint(len(v)-width)
   v_slice = v[rand:rand+width]
