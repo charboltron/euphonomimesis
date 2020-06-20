@@ -39,9 +39,7 @@ def play_fft(fft_vector):
     global counter
     counter += 1
     cwd = os.getcwd()
-    # iyf = scipy.fftpack.irfft(fft_vector, 44100)
     file_path = cwd+'/mod_clips/exp' + str(counter) + '.wav'
-    # write_file(file_path, iyf) 
     write_file(file_path, fft_vector) 
     return
 
@@ -85,7 +83,6 @@ def breed_loop(N, data, gdata, save_interval):
     if n % 25 == 0:
         print(f'min error {np.amin(errors)}')
         min_errs.append(np.amin(errors))
-        # ffts.append(data)
   
   return ffts, min_errs
 
@@ -95,7 +92,6 @@ def main():
   for f in os.listdir(mods):
     os.remove(mods+f) 
   dir_name = os.getcwd() + '/1secs/'
-  # dir_name = os.getcwd() + '/1sec_goals2/'
   g_dir_name = os.getcwd() + '/1sec_goals/'
   print('getting ffts from clips')
   data = get_clips(dir_name, 8657)
