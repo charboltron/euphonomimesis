@@ -1,4 +1,3 @@
-Clarinets.wav
 Bebop_Organ.wav
 Evolving_Lead.wav
 Formant_Builder.wav
