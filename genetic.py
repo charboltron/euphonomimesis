@@ -5,12 +5,15 @@ import math
 # assume values in vector normalized to [0, 1]
 
 def mutate(v, prob):
-  big = max(v)
-  for item in v:
-    if np.random.rand() < prob:
-      r = np.random.randint(len(v))
-      item += (np.random.rand()-0.5)*(item/2)
-  np.clip(v, 0, big)
+  if np.random.rand() > prob:
+    return v
+  width = 100
+  delta = .1
+  rand = np.random.randint(len(v)-width)
+  v_slice = v[rand:rand+width]
+  small, big = np.amin(v), np.amax(v)
+  v_slice *= np.random.uniform(low=1-delta, high=1+delta)
+  v = np.clip(v, small, big)
   return v
 
 # take an input matrix and probability,
@@ -74,18 +77,9 @@ def fit_all(m, g):
   f = lambda v: np.linalg.norm(v-g)
   v = np.apply_along_axis(f, 1, m)
   
-  # for vec in m:  this is what linalg.norm(v-g) does
-  #   error = 0.0
-  #   for j in range(len(vec)): 
-  #     error += pow(vec[j]-g[j], 2)
-  #   errors.append(math.sqrt(error))
-
   goal = False
   for e in (v/sum(v)):
     if e <= epsilon:
       goal = True
 
-  # print(f'norm v = {v/sum(v)}, sum of normed = {sum(v/sum(v))}')
-  # print(f'v = {v}')
-  # print(f'mininum error = {min(v/sum(v))} ')
   return v/sum(v), goal
